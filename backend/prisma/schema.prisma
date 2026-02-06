@@ -1,0 +1,77 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model User {
+    id        String   @id @default(uuid())
+    email     String   @unique
+    name      String
+    avatarUrl String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    hostedRooms  Room[]
+    participants Participant[]
+    recordings   Recording[]
+}
+
+model Room {
+    id           String        @id @default(uuid())
+    title        String
+    description  String?
+    isActive     Boolean       @default(true)
+    scheduledAt  DateTime?
+    createdAt    DateTime      @default(now())
+    updatedAt    DateTime      @updatedAt
+    hostId       String
+    host         User          @relation(fields: [hostId], references: [id])
+    participants Participant[]
+    recordings   Recording[]
+}
+
+model Participant {
+    id       String          @id @default(uuid())
+    role     ParticipantRole @default(GUEST)
+    joinedAt DateTime        @default(now())
+    leftAt   DateTime?
+
+    userId String
+    user   User   @relation(fields: [userId], references: [id])
+    roomId String
+    room   Room   @relation(fields: [roomId], references: [id])
+
+    @@unique([userId, roomId])
+}
+
+model Recording {
+    id        String          @id @default(uuid())
+    fileName  String
+    fileUrl   String?
+    fileSize  Int?
+    duration  Int?
+    mimeType  String?
+    status    RecordingStatus @default(UPLOADING)
+    createdAt DateTime        @default(now())
+    updatedAt DateTime        @updatedAt
+    roomId    String
+    room      Room            @relation(fields: [roomId], references: [id])
+    userId    String
+    user      User            @relation(fields: [userId], references: [id])
+}
+
+enum ParticipantRole {
+    HOST
+    GUEST
+}
+
+enum RecordingStatus {
+    UPLOADING
+    PROCESSING
+    READY
+    FAILED
+}
