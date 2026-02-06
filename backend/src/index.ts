@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import authRoutes from "./routes/auth.js";
 import userRoutes from "./routes/users.js";
 import roomRoutes from "./routes/rooms.js";
 import recordingRoutes from "./routes/recordings.js";
@@ -14,6 +15,7 @@ app.get("/health", (_req, res) => {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
+app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/rooms", roomRoutes);
 app.use("/api/recordings", recordingRoutes);

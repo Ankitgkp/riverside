@@ -11,6 +11,7 @@ model User {
     id        String   @id @default(uuid())
     email     String   @unique
     name      String
+    password  String
     avatarUrl String?
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
@@ -18,20 +19,30 @@ model User {
     hostedRooms  Room[]
     participants Participant[]
     recordings   Recording[]
+    waitingRooms WaitingRoom[]
 }
 
 model Room {
-    id           String        @id @default(uuid())
-    title        String
-    description  String?
-    isActive     Boolean       @default(true)
-    scheduledAt  DateTime?
-    createdAt    DateTime      @default(now())
-    updatedAt    DateTime      @updatedAt
-    hostId       String
-    host         User          @relation(fields: [hostId], references: [id])
-    participants Participant[]
-    recordings   Recording[]
+    id              String        @id @default(uuid())
+    code            String        @unique // Human-readable room code like "abc-xyz-123"
+    title           String
+    description     String?
+    isActive        Boolean       @default(true)
+    scheduledAt     DateTime?
+    createdAt       DateTime      @default(now())
+    updatedAt       DateTime      @updatedAt
+    
+    // Room settings
+    maxParticipants Int           @default(10)
+    videoEnabled    Boolean       @default(true)
+    audioOnly       Boolean       @default(false)
+    waitingRoom     Boolean       @default(false) // If true, host must approve participants
+    
+    hostId          String
+    host            User          @relation(fields: [hostId], references: [id])
+    participants    Participant[]
+    recordings      Recording[]
+    waitingList     WaitingRoom[]
 }
 
 model Participant {
@@ -39,6 +50,21 @@ model Participant {
     role     ParticipantRole @default(GUEST)
     joinedAt DateTime        @default(now())
     leftAt   DateTime?
+
+    userId String
+    user   User   @relation(fields: [userId], references: [id])
+    roomId String
+    room   Room   @relation(fields: [roomId], references: [id])
+
+    @@unique([userId, roomId])
+}
+
+// Waiting room for participants awaiting host approval
+model WaitingRoom {
+    id        String            @id @default(uuid())
+    status    WaitingRoomStatus @default(PENDING)
+    createdAt DateTime          @default(now())
+    updatedAt DateTime          @updatedAt
 
     userId String
     user   User   @relation(fields: [userId], references: [id])
@@ -74,4 +100,10 @@ enum RecordingStatus {
     PROCESSING
     READY
     FAILED
+}
+
+enum WaitingRoomStatus {
+    PENDING
+    APPROVED
+    REJECTED
 }
