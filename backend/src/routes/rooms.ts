@@ -374,12 +374,10 @@ router.post("/:id/end", authMiddleware, async (req: AuthRequest, res: Response) 
   }
 });
 
-// Protected: Delete room (host only)
 router.delete("/:id", authMiddleware, async (req: AuthRequest, res: Response) => {
   const roomId = req.params.id as string;
 
   try {
-    // Check if user is the host
     const room = await prisma.room.findUnique({ where: { id: roomId } });
     if (!room) {
       res.status(404).json({ message: "Room not found" });
@@ -399,7 +397,6 @@ router.delete("/:id", authMiddleware, async (req: AuthRequest, res: Response) =>
   }
 });
 
-// Protected: Get waiting room list (host only)
 router.get("/:id/waiting-room", authMiddleware, async (req: AuthRequest, res: Response) => {
   const roomId = req.params.id as string;
 
@@ -426,7 +423,6 @@ router.get("/:id/waiting-room", authMiddleware, async (req: AuthRequest, res: Re
   }
 });
 
-// Protected: Approve user from waiting room (host only)
 router.post("/:id/waiting-room/:userId/approve", authMiddleware, async (req: AuthRequest, res: Response) => {
   const roomId = req.params.id as string;
   const userId = req.params.userId as string;
@@ -445,7 +441,7 @@ router.post("/:id/waiting-room/:userId/approve", authMiddleware, async (req: Aut
       return;
     }
 
-    // Check capacity
+
     if (room._count.participants >= room.maxParticipants) {
       res.status(400).json({ message: "Room is full" });
       return;
@@ -473,7 +469,7 @@ router.post("/:id/waiting-room/:userId/approve", authMiddleware, async (req: Aut
   }
 });
 
-// Protected: Reject user from waiting room (host only)
+
 router.post("/:id/waiting-room/:userId/reject", authMiddleware, async (req: AuthRequest, res: Response) => {
   const roomId = req.params.id as string;
   const userId = req.params.userId as string;
