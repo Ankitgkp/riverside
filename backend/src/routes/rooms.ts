@@ -5,7 +5,6 @@ import { authMiddleware, AuthRequest } from "../middleware/auth.js";
 
 const router = Router();
 
-// Generate unique room code (format: abc-xyz-123)
 function generateRoomCode(): string {
   const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
   const segments = [];
@@ -19,7 +18,6 @@ function generateRoomCode(): string {
   return segments.join("-");
 }
 
-// Ensure unique room code
 async function getUniqueRoomCode(): Promise<string> {
   let code = generateRoomCode();
   let exists = await prisma.room.findUnique({ where: { code } });
@@ -30,7 +28,6 @@ async function getUniqueRoomCode(): Promise<string> {
   return code;
 }
 
-// Public: Get all rooms
 router.get("/", async (_req: AuthRequest, res: Response) => {
   try {
     const rooms = await prisma.room.findMany({
@@ -50,7 +47,7 @@ router.get("/", async (_req: AuthRequest, res: Response) => {
   }
 });
 
-// Public: Get active rooms
+
 router.get("/active", async (_req: AuthRequest, res: Response) => {
   try {
     const rooms = await prisma.room.findMany({
@@ -72,7 +69,7 @@ router.get("/active", async (_req: AuthRequest, res: Response) => {
   }
 });
 
-// Public: Get room by ID
+
 router.get("/:id", async (req: AuthRequest, res: Response) => {
   const roomId = req.params.id as string;
   try {
@@ -95,8 +92,6 @@ router.get("/:id", async (req: AuthRequest, res: Response) => {
     res.status(500).json({ message: "Failed to fetch room" });
   }
 });
-
-// Public: Get room by code
 router.get("/code/:code", async (req: AuthRequest, res: Response) => {
   const code = req.params.code as string;
   try {
@@ -117,7 +112,6 @@ router.get("/code/:code", async (req: AuthRequest, res: Response) => {
   }
 });
 
-// Protected: Join room by code
 router.post("/code/:code/join", authMiddleware, async (req: AuthRequest, res: Response) => {
   const code = req.params.code as string;
 
